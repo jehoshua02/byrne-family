@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Byrne Family</title>
+
+
+<style type="text/css">
+* {
+	margin: 0;
+	padding: 0;
+}
+
+.clearfix {
+	clear: both;
+}
+
+a {
+	text-decoration: none;
+}
+
+#header {
+	padding: 10px 20px;
+	position: relative;
+	color: #ab9274;
+	text-shadow: #FFF 0px -1px 0px;
+}
+
+#imgContainer {
+	background: url('img_bg.png') repeat center bottom;
+	border: solid #AB9274;
+	border-width: 1px 0 0;
+}
+
+#names {
+	background: url('trim.png') repeat-x center -250px;
+}
+
+#byrne_family {
+	border: solid #AB9274;
+	border-width: 0 1px;
+	display: block;
+	margin: auto;
+}
+
+#names div {
+	width: 25%;
+	float: left;
+}
+
+#names div>div {
+	float: none;
+	display: block;
+	font-weight: bold;
+	width: 80%;
+	min-width: 100px;
+	max-width: 200px;
+	margin: auto;
+	margin-top: 20px;
+	padding: 10px;
+	background: url('bg_1x1_FFFFFF_t50.png') repeat;
+	-moz-border-radius: 10px;
+	border: 1px solid #ab9274;
+}
+
+#names div div ol {
+	font-weight: normal;
+	margin-left: 30px;
+}
+
+
+#zoom {
+	width: 144px;
+	padding: 12px;
+	position: fixed;
+	top: 0;
+	right: 0;
+}
+
+#zoom a {
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	background: url('zoom.png') no-repeat;
+	margin: 0 5px;
+}
+
+a#zoomIn {
+	background-position: -12px -12px;
+}
+
+a#zoomIn:hover {
+	background-position: -60px -12px;
+}
+
+a#zoomIn:active {
+	background-position: -108px -12px;
+}
+
+a#zoomOut {
+	background-position: -12px -60px;
+}
+
+a#zoomOut:hover {
+	background-position: -60px -60px;
+}
+
+a#zoomOut:active {
+	background-position: -108px -60px;
+}
+
+a#zoomReset {
+	background-position: -12px -108px;
+}
+
+a#zoomReset:hover {
+	background-position: -60px -108px;
+}
+
+a#zoomReset:active {
+	background-position: -108px -108px;
+}
+
+</style>
+
+
+<script type="text/javascript">
+var $ = function (id) {return document.getElementById(id);}
+
+var getZoomFactor = function ()
+{
+	var factor = 1;
+	if (document.body.getBoundingClientRect) {
+		// rect is only in physical pixel size in IE before version 8 
+		var rect = document.body.getBoundingClientRect ();
+		var physicalW = rect.right - rect.left;
+		var logicalW = document.body.offsetWidth;
+
+		// the zoom level is always an integer percent value
+		factor = Math.round ((physicalW / logicalW) * 100) / 100;
+	}
+	return factor;
+}
+
+var windowDimensions = function ()
+{
+	var zoomFactor = getZoomFactor();
+	var w = Math.round (document.documentElement.clientWidth / zoomFactor);
+	var h = Math.round (document.documentElement.clientHeight / zoomFactor);
+	return Array(w,h);
+}
+
+var ImgScaleToFit = function (img, cWidth, cHeight)
+{
+	var oldWidth = img.width;
+	var oldHeight = img.height;
+	var imgRatio = oldWidth / oldHeight;
+
+	// calculate new height and width
+	var newWidth = cWidth;
+	var newHeight = newWidth / imgRatio;
+	
+	// if new dimensions don't fit . . .
+	if (newWidth > cWidth || newHeight > cHeight)
+	{
+		// try the other way
+		newHeight = cHeight;
+		newWidth = newHeight * imgRatio;
+	}
+	
+	// if they still don't fit . . .
+	if (newWidth > cWidth || newHeight > cHeight)
+	{
+		// good grief!
+		alert('There is something wrong with Josh\'s Brain!');
+	}
+	
+	// if there is an image map . . .
+	var imgMap = $((img.attributes.usemap.value).replace('#', ''));
+	if (imgMap)
+	{
+		// adjust shape coordinates
+		var shapes = imgMap.children;
+		for (var k in shapes)
+		{
+			shape = shapes[k];
+			switch (shape.shape)
+			{
+				case 'circle':
+					// get coords
+					var coords = (shape.coords).split(',');
+					var x = (coords[0] / oldWidth) * newWidth;
+					var y = (coords[1] / oldHeight) * newHeight;
+					var r = (coords[2] / oldWidth) * newWidth;
+					coords = [x,y,r];
+					shape.coords = coords.join(',');
+				break;
+			}
+		}
+	}
+
+	// update image dimensions
+	img.width = newWidth;
+	img.height = newHeight;
+	img.style.width = newWidth + 'px';
+	img.style.height = newHeight + 'px';
+}
+
+var ImgFitToWindow = function (img)
+{
+	var dimensions = windowDimensions();
+	var width = dimensions[0];
+	var height = dimensions[1];
+	ImgScaleToFit(img, width, height);
+}
+
+var zoomFactor = 0.10;
+var zoomIn = function ()
+{
+	var img = $('byrne_family');
+	var cWidth = img.width * (1 + zoomFactor);
+	var cHeight = img.height * (1 + zoomFactor);
+	ImgScaleToFit(img, cWidth, cHeight);
+}
+
+var zoomOut = function ()
+{
+	var img = $('byrne_family');
+	var cWidth = img.width * (1 - zoomFactor);
+	var cHeight = img.height * (1 - zoomFactor);
+	ImgScaleToFit(img, cWidth, cHeight);
+}
+
+var zoomReset = function ()
+{
+	var img = $('byrne_family');
+	ImgFitToWindow(img);
+}
+
+window.onload = function ()
+{
+	var img = $('byrne_family');
+
+	window.onresize = function () {ImgFitToWindow(img);}
+
+	var ms = 100;
+	var zoomInterval = null;
+	$('zoomIn').onclick = zoomIn;
+	$('zoomIn').onmousedown = function () {zoomInterval = setInterval("zoomIn()", ms);}
+	$('zoomIn').onmouseup = function () {clearInterval(zoomInterval);}
+	$('zoomOut').onclick = zoomOut;
+	$('zoomOut').onmousedown = function () {zoomInterval = setInterval("zoomOut()", ms);}
+	$('zoomOut').onmouseup = function () {clearInterval(zoomInterval);}
+	$('zoomReset').onclick = zoomReset;
+	window.onmouseup = function () {clearInterval(zoomInterval);}
+
+	ImgFitToWindow(img);
+}
+</script>
+
+
+</head>
+
+<body>
+
+
+
+
+<div id="header">
+	<h1>Byrne Family</h1>
+	<div id="zoom"><a id="zoomIn" href="javascript:void()">&nbsp;</a> <a id="zoomOut" href="javascript:void()">&nbsp;</a> <a id="zoomReset" href="javascript:void()">&nbsp;</a></div>
+</div><!-- end header -->
+
+
+
+
+<div id="content">
+
+	<div id="imgContainer">
+		<img id="byrne_family" src="http://jstoutenburg.com/resources/php/image.php?width=1300&height=1300&image=/projects/byrne_family/PhotoScanApril212011.png" alt="Byrne Family" width="4866" height="1927" border="0" usemap="#byrne_family_map" />
+
+		<map name="byrne_family_map" id="byrne_family_map">
+			<!-- Standing, left to right: -->
+			<area shape="circle" coords="425,365,122" href="#" alt="Leroy Stults" title="Leroy Stults" />
+			<area shape="circle" coords="1176,491,122" href="#" alt="Anthony Shamrell" title="Anthony Shamrell" />
+			<area shape="circle" coords="1908,375,122" href="#" alt="Vincent Byrne" title="Vincent Byrne" />
+			<area shape="circle" coords="2332,335,122" href="#" alt="Nicholas Bryne" title="Nicholas Bryne" />
+			<area shape="circle" coords="2748,383,122" href="#" alt="William Bryne" title="William Bryne" />
+			<area shape="circle" coords="3628,335,122" href="#" alt="Joseph Byrne" title="Joseph Byrne" />
+			<area shape="circle" coords="4300,227,122" href="#" alt="E. J. Chartlier" title="E. J. Chartlier" />
+
+			<!-- Seated, left to right: -->
+			<area shape="circle" coords="296,831,122" href="#" alt="Mrs. Margaret Stults" title="Mrs. Margaret Stults" />
+			<area shape="circle" coords="972,747,122" href="#" alt="Mrs. Katherine Shamrell" title="Mrs. Katherine Shamrell" />
+			<area shape="circle" coords="1432,739,122" href="#" alt="Miss Agnes Byrne" title="Miss Agnes Byrne" />
+			<area shape="circle" coords="2068,783,122" href="#" alt="Nicholas J. Byrne" title="Nicholas J. Byrne" />
+			<area shape="circle" coords="2732,787,122" href="#" alt="Elizabeth Byrne" title="Elizabeth Byrne" />
+			<area shape="circle" coords="3240,811,122" href="#" alt="Mrs. Mary Donnelly" title="Mrs. Mary Donnelly" />
+			<area shape="circle" coords="3848,623,122" href="#" alt="Mrs. Pearl Byrne" title="Mrs. Pearl Byrne" />
+			<area shape="circle" coords="4415,673,122" href="#" alt="Mrs. Nellie Chartier" title="Mrs. Nellie Chartier" />
+
+			<!-- Children on laps: -->
+			<area shape="circle" coords="395,1094,122" href="#" alt="Leroy Stults Jr." title="Leroy Stults Jr." />
+			<area shape="circle" coords="641,1020,122" href="#" alt="Dolores Shamrell" title="Dolores Shamrell" />
+			<area shape="circle" coords="955,1040,122" href="#" alt="Vincent Shamrell" title="Vincent Shamrell" />
+			<area shape="circle" coords="1268,1040,122" href="#" alt="Bernard Shamrell" title="Bernard Shamrell" />
+			<area shape="circle" coords="2535,1060,122" href="#" alt="Joseph Chartier" title="Joseph Chartier" />
+			<area shape="circle" coords="3357,1012,122" href="#" alt="Eugene Donnelly" title="Eugene Donnelly" />
+			<area shape="circle" coords="3746,1042,122" href="#" alt="Mary Golden Donnelly" title="Mary Golden Donnelly" />
+			<area shape="circle" coords="4028,887,122" href="#" alt="Kathleen Byrne" title="Kathleen Byrne" />
+			<area shape="circle" coords="4588,913,122" href="#" alt="Nicholas Chartier" title="Nicholas Chartier" />
+
+			<!-- Bottom row, seated on the ground: -->
+			<area shape="circle" coords="821,1474,122" href="#" alt="Jerome Donnelly" title="Jerome Donnelly" />
+			<area shape="circle" coords="1201,1354,122" href="#" alt="Anthony Shamrell Jr." title="Anthony Shamrell Jr." />
+			<area shape="circle" coords="1554,1214,122" href="#" alt="Mary Martha Byrne" title="Mary Martha Byrne" />
+			<area shape="circle" coords="2075,1327,122" href="#" alt="Bessie Chartier" title="Bessie Chartier" />
+			<area shape="circle" coords="2455,1354,122" href="#" alt="John Donnelly Jr." title="John Donnelly Jr." />
+			<area shape="circle" coords="2948,1367,122" href="#" alt="James Donnelly" title="James Donnelly" />
+			<area shape="circle" coords="3062,1161,122" href="#" alt="John Donnelly" title="John Donnelly" />
+			<area shape="circle" coords="3477,1405,122" href="#" alt="Joseph Donnelly" title="Joseph Donnelly" />
+			<area shape="circle" coords="4129,1267,122" href="#" alt="E. J. Chartier Jr." title="E. J. Chartier Jr." />
+			<area shape="circle" coords="4615,1368,122" href="#" alt="John Chartier" title="John Chartier" />
+		</map>
+	</div><!-- imgContainer -->
+
+
+
+
+	<div id="names">
+		<div>
+			<div>Standing, left to right:
+				<ol>
+					<li>Leroy Stults</li>
+					<li>Anthony Shamrell</li>
+					<li>Vincent Byrne</li>
+					<li>Nicholas Bryne</li>
+					<li>William Bryne</li>
+					<li>Joseph Byrne</li>
+					<li>E. J. Chartlier</li>
+				</ol>
+			</div>
+		</div>
+
+		<div>
+			<div>Seated, left to right:
+				<ol>
+					<li>Mrs. Margaret Stults</li>
+					<li>Mrs. Katherine Shamrell</li>
+					<li>Miss Agnes Byrne</li>
+					<li>Nicholas J. Byrne</li>
+					<li>Elizabeth Byrne</li>
+					<li>Mrs. Mary Donnelly</li>
+					<li>Mrs. Pearl Byrne</li>
+					<li>Mrs. Nellie Chartier</li>
+				</ol>
+			</div>
+		</div>
+
+		<div>
+			<div>Children on laps:
+				<ol>
+					<li>Leroy Stults Jr.</li>
+					<li>Dolores Shamrell</li>
+					<li>Vincent Shamrell</li>
+					<li>Bernard Shamrell</li>
+					<li>Joseph Chartier</li>
+					<li>Eugene Donnelly</li>
+					<li>Mary Golden Donnelly</li>
+					<li>Kathleen Byrne</li>
+					<li>Nicholas Chartier</li>
+				</ol>
+			</div>
+		</div>
+
+		<div>
+			<div>Bottom row, seated on the ground:
+				<ol>
+					<li>Jerome Donnelly</li>
+					<li>Anthony Shamrell Jr.</li>
+					<li>Mary Martha Byrne</li>
+					<li>Bessie Chartier</li>
+					<li>John Donnelly Jr.</li>
+					<li>James Donnelly</li>
+					<li>John Donnelly</li>
+					<li>Joseph Donnelly</li>
+					<li>E. J. Chartier Jr.</li>
+					<li>John Chartier</li>
+				</ol>
+			</div>
+		</div>
+
+		<br class="clearfix" />
+	</div><!-- end names -->
+
+	
+</div><!-- end content -->
+
+
+</body>
+</html>
